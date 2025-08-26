@@ -1,0 +1,5 @@
+{
+  "name": "ACP",
+  "description": "Application de l'AéroClub du Poitou regroupant les checklists de la flotte d'avions, ainsi que des informations diverses",
+  "requestFramePermissions": []
+}
