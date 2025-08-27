@@ -175,7 +175,7 @@ const Header = forwardRef<HTMLElement, HeaderProps>(({ isEditMode, onToggleEditM
               onClick={onToggleEditMode}
               role="switch"
               aria-checked={isEditMode}
-              aria-label={isEditMode ? "Passer en mode En Vol" : "Passer en mode Au Sol (éditeur)"}
+              aria-label={isEditMode ? "Passer en mode 'En vol'" : "Passer en mode 'Au sol (éditeur)'"}
               className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 ${
                 isEditMode ? 'bg-orange-500' : 'bg-green-500'
               }`}
