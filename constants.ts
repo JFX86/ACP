@@ -8,6 +8,7 @@ export const INITIAL_CHECKLISTS: Checklist[] = [
       { id: 'ac-qa', name: 'F-GKQA', url: 'https://www.aero-club-poitou.fr/acp/storage/app/media/Check%20list%20DR400%20QA%20VX%20JFG-06-25.pdf' },
       { id: 'ac-vx', name: 'F-GLVX', url: 'https://www.aero-club-poitou.fr/acp/storage/app/media/Check%20list%20DR400%20QA%20VX%20JFG-06-25.pdf' },
     ],
+    notes: '',
     sections: [
       {
         id: 'dr400-s-urg',
@@ -198,6 +199,7 @@ export const INITIAL_CHECKLISTS: Checklist[] = [
         { id: 'ac-bk', name: 'F-BUBK', url: 'https://www.aero-club-poitou.fr/acp/storage/app/media/Check%20list%20C150%20BK%20JFG-06-25.pdf' },
         { id: 'ac-ya', name: 'F-GIYA', url: 'https://www.aero-club-poitou.fr/acp/storage/app/media/Check%20list%20C150%20YA%20JFG-06-25.pdf' }
     ],
+    notes: '',
     sections: [
       {
         id: 'c152-s-urg',
@@ -481,6 +483,7 @@ export const INITIAL_CHECKLISTS: Checklist[] = [
         { id: 'ac-ny', name: 'F-HNNY', url: 'https://www.aero-club-poitou.fr/acp/storage/app/media/Check%20list%20EVEKTOR%20NY%20JFG-05-06-25.pdf' },
         { id: 'ac-pi', name: 'F-HMPI', url: 'https://www.aero-club-poitou.fr/acp/storage/app/media/Check%20list%20EVEKTOR%20PI%20JFG-05-06-25.pdf' }
     ],
+    notes: '',
     sections: [
       {
         id: 'evektor-s-urg',

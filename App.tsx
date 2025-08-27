@@ -1,4 +1,4 @@
-
+// Fix: Corrected the React import to properly destructure hooks.
 import React, { useState, useCallback, useEffect, useRef, useMemo, forwardRef } from 'react';
 import type { Checklist, ChecklistItem, ChecklistSection, Aircraft } from './types';
 import { INITIAL_CHECKLISTS } from './constants';
@@ -173,6 +173,9 @@ const Header = forwardRef<HTMLElement, HeaderProps>(({ isEditMode, onToggleEditM
             </div>
             <button
               onClick={onToggleEditMode}
+              role="switch"
+              aria-checked={isEditMode}
+              aria-label={isEditMode ? "Passer en mode En Vol" : "Passer en mode Au Sol (éditeur)"}
               className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 ${
                 isEditMode ? 'bg-orange-500' : 'bg-green-500'
               }`}
@@ -219,10 +222,10 @@ const TabsComponent: React.FC<TabsComponentProps> = ({ checklists, activeTab, on
     }
 
     const tabClasses = [
-      'py-2 px-3 sm:px-4 text-sm sm:text-base font-medium transition-all duration-200 uppercase tracking-wider flex-shrink-0 rounded-t-md',
+      'relative group py-2 px-3 sm:px-4 text-sm sm:text-base font-medium transition-colors duration-200 uppercase tracking-wider flex-shrink-0 rounded-t-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
       isActive
-        ? 'border-b-2 border-blue-400 text-blue-400'
-        : 'text-gray-400 hover:text-blue-400',
+        ? 'text-blue-400'
+        : 'text-gray-400 hover:text-white',
        specialBgClass
     ]
       .filter(Boolean)
@@ -230,6 +233,12 @@ const TabsComponent: React.FC<TabsComponentProps> = ({ checklists, activeTab, on
     return (
       <button key={tab.id} onClick={() => onTabChange(tab.id)} className={tabClasses}>
         {tab.title}
+        <span
+          className={`absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 transition-transform duration-300 ease-out transform-gpu ${
+            isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+          }`}
+          aria-hidden="true"
+        />
       </button>
     );
   };
@@ -470,7 +479,7 @@ const LinksComponent: React.FC<LinksComponentProps> = ({ links, isEditMode, onAd
             </a>
             <div className="text-right text-xs text-sky-300 mt-8 italic">
                 <p>créé par Julien FRADET</p>
-                <p>Dernière mise à jour : 25 juillet 2024</p>
+                <p>Dernière mise à jour : 27 août 2025</p>
             </div>
         </div>
     );
@@ -522,14 +531,27 @@ const GuideComponent: React.FC = () => {
             
             <SectionTitle>Mode "En Vol" (Utilisation normale)</SectionTitle>
             <p>Ce mode, identifié par la couleur verte, est conçu pour l'utilisation en vol. Il est activé par défaut.</p>
+            
             <SubSectionTitle>Utilisation de la checklist</SubSectionTitle>
             <ul>
                 <ListItem><strong>Cocher un item :</strong> Appuyez sur la case à cocher à droite de chaque ligne.</ListItem>
-                <ListItem><strong>Surlignage bleu :</strong> Le prochain item à vérifier est surligné en bleu pour vous guider.</ListItem>
+                <ListItem><strong>Surlignage bleu :</strong> Le prochain item à vérifier est surligné en bleu pour vous guider. L'application défile automatiquement pour le garder visible.</ListItem>
                 <ListItem><strong>Avertissement rouge :</strong> Si vous cochez un item alors qu'un précédent a été oublié, l'item oublié sera surligné en rouge. Un bandeau d'avertissement apparaîtra également en haut de l'écran.</ListItem>
-                <ListItem><strong>Sections urgences/détresse :</strong> Ces sections critiques sont colorées en rouge et orange pour une identification rapide.</ListItem>
-                <ListItem><strong>Replier/Déplier une section :</strong> Appuyez sur le titre d'une section pour la masquer ou l'afficher. Une section se replie automatiquement lorsque tous ses items sont cochés.</ListItem>
-                <ListItem><strong>Boutons de gestion :</strong> Utilisez les boutons "Tout décocher", "Replier/Déplier tout" pour gérer rapidement l'état de la checklist.</ListItem>
+                <ListItem><strong>Sections critiques :</strong> Les sections "URGENCES" et "DETRESSE" sont colorées en rouge et orange pour une identification rapide.</ListItem>
+            </ul>
+
+            <SubSectionTitle>Fonctionnalités Clés</SubSectionTitle>
+            <ul>
+                <ListItem><strong>Filtrage rapide :</strong> Une barre de recherche apparaît en haut de chaque checklist. Tapez-y pour filtrer instantanément les items par nom ou action, idéal pour retrouver une information précise rapidement.</ListItem>
+                <ListItem><strong>Notes Personnelles :</strong> Une zone de texte sous la liste des avions vous permet de prendre des notes spécifiques à la checklist. Ces notes sont sauvegardées automatiquement et restent disponibles pour vos prochains vols.</ListItem>
+                <ListItem><strong>Gestion des sections :</strong> Appuyez sur le titre d'une section pour la replier ou la déplier. Une section se replie automatiquement lorsque tous ses items sont cochés.</ListItem>
+            </ul>
+
+            <SubSectionTitle>Boutons d'Action Rapide</SubSectionTitle>
+            <p>En haut de chaque checklist, deux boutons couvrant toute la largeur vous aident à gérer l'affichage :</p>
+            <ul>
+                <ListItem><strong>Replier / Déplier toutes les sections :</strong> Ce bouton change de fonction. Par défaut, il permet de replier toutes les sections. Une fois activé, il se transforme pour tout déplier d'un coup.</ListItem>
+                <ListItem><strong>Réinitialiser (tout décocher) :</strong> Ce bouton décoche tous les items, vous préparant pour une nouvelle utilisation. Il respecte les sections que vous avez configurées pour être cochées par défaut (voir mode "Au Sol").</ListItem>
             </ul>
 
             <SectionTitle>Mode "Au Sol" (Éditeur)</SectionTitle>
@@ -548,6 +570,7 @@ const GuideComponent: React.FC = () => {
                 <ListItem><strong>Ajouter/Supprimer :</strong> Des boutons apparaissent pour ajouter ou supprimer des sections et des lignes.</ListItem>
                 <ListItem><strong>Item critique (🚨) :</strong> Cliquez sur l'icône d'alerte pour marquer un item comme critique (il apparaîtra en rouge en mode vol).</ListItem>
                 <ListItem><strong>Copier/Coller une section :</strong> Utilisez les icônes de copie sur une section, puis collez-la où vous le souhaitez via les zones "+ Ajouter une Section".</ListItem>
+                <ListItem><strong>Pré-cocher une section (✅) :</strong> Cochez cette case à côté des boutons d'une section. En mode "En Vol", cette section apparaîtra alors comme entièrement cochée et repliée par défaut. C'est très utile pour des sections comme "URGENCES" ou "PARAMÈTRES", que l'on consulte plus qu'on ne les exécute pas à pas.</ListItem>
             </ul>
 
             <SectionTitle>Paramètres (via l'icône <FaGear className="inline-block" /> en mode éditeur)</SectionTitle>
@@ -620,9 +643,66 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
     const [newAircraftUrlInput, setNewAircraftUrlInput] = useState('');
     const [sectionToDeleteId, setSectionToDeleteId] = useState<string | null>(null);
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+    const [filterText, setFilterText] = useState<string>('');
+    const [localNotes, setLocalNotes] = useState(checklist.notes || '');
     const itemRefs = useRef<Record<string, HTMLLIElement | null>>({});
     const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const shouldScrollAfterCheck = useRef(false);
+    const wasInEditMode = useRef(isEditMode);
+
+    // Sync local notes with props
+    useEffect(() => {
+        setLocalNotes(checklist.notes || '');
+    }, [checklist.notes]);
+
+    // Debounced save for notes
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (localNotes !== (checklist.notes || '')) {
+                onChecklistChange({ ...checklist, notes: localNotes });
+            }
+        }, 500); // 500ms debounce delay
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [localNotes, checklist, onChecklistChange]);
+
+
+    const handleResetChecks = useCallback(() => {
+        const updatedSections = checklist.sections.map(section => ({
+            ...section,
+            items: section.items.map(item => ({ ...item, checked: !!section.defaultChecked }))
+        }));
+        onChecklistChange({ ...checklist, sections: updatedSections });
+        setHighlightedItemId(null);
+    }, [checklist, onChecklistChange]);
+
+    useEffect(() => {
+        // Automatically reset checks when switching from Edit Mode to Flight Mode
+        if (wasInEditMode.current && !isEditMode) {
+            handleResetChecks();
+        }
+        wasInEditMode.current = isEditMode;
+    }, [isEditMode, handleResetChecks]);
+
+
+    const filteredSections = useMemo(() => {
+        if (isEditMode || !filterText.trim()) {
+            return checklist.sections;
+        }
+        const lowercasedFilter = filterText.toLowerCase();
+        
+        return checklist.sections
+            .map(section => ({
+                ...section,
+                items: section.items.filter(item =>
+                    item.label.toLowerCase().includes(lowercasedFilter) ||
+                    item.action.toLowerCase().includes(lowercasedFilter)
+                ),
+            }))
+            .filter(section => section.items.length > 0);
+    }, [checklist.sections, filterText, isEditMode]);
 
     const scrollToElement = useCallback((element: HTMLElement) => {
         if (!element) return;
@@ -693,6 +773,23 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
             }
         }
     }, [highlightedItemId, isEditMode, scrollToElement]);
+
+    // Automatically expand a section if the next item to check is inside it
+    useEffect(() => {
+        if (!isEditMode && highlightedItemId) {
+            const sectionContainingHighlight = checklist.sections.find(section => 
+                section.items.some(item => item.id === highlightedItemId)
+            );
+            if (sectionContainingHighlight && collapsedSections.has(sectionContainingHighlight.id)) {
+                setCollapsedSections(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(sectionContainingHighlight.id);
+                    return newSet;
+                });
+            }
+        }
+    }, [highlightedItemId, checklist.sections, collapsedSections, isEditMode]);
+
 
     useEffect(() => {
         if (isEditMode) {
@@ -799,16 +896,6 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
     const handleCollapseAll = () => {
         const allSectionIds = new Set(checklist.sections.map(s => s.id));
         setCollapsedSections(allSectionIds);
-    };
-
-    const handleCheckAll = (check: boolean) => {
-        const updatedSections = checklist.sections.map(section => ({
-            ...section,
-            items: section.items.map(item => ({ ...item, checked: check }))
-        }));
-        onChecklistChange({ ...checklist, sections: updatedSections });
-        setHighlightedItemId(null);
-        setCollapsedSections(new Set());
     };
 
     const handleAddAircraft = () => {
@@ -965,6 +1052,16 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
         onChecklistChange({ ...checklist, sections: updatedSections });
     };
 
+    const handleToggleSectionDefaultCheck = (sectionId: string) => {
+        const updatedSections = checklist.sections.map(section => {
+            if (section.id === sectionId) {
+                return { ...section, defaultChecked: !section.defaultChecked };
+            }
+            return section;
+        });
+        onChecklistChange({ ...checklist, sections: updatedSections });
+    };
+
     const handleSectionDragStart = (sectionId: string) => {
         if (!isEditMode) return;
         setDraggedSectionId(sectionId);
@@ -995,11 +1092,23 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
     };
 
     const handleSectionLinkClick = (sectionId: string) => {
-        const sectionElement = sectionRefs.current[sectionId];
-        if (sectionElement) {
-            scrollToElement(sectionElement);
-        }
+        // Ensure the section is expanded before scrolling
+        setCollapsedSections(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(sectionId);
+            return newSet;
+        });
+        
+        // Use a timeout to allow the DOM to update before scrolling
+        setTimeout(() => {
+            const sectionElement = sectionRefs.current[sectionId];
+            if (sectionElement) {
+                scrollToElement(sectionElement);
+            }
+        }, 50);
     };
+
+    const allSectionsCollapsed = collapsedSections.size > 0 && collapsedSections.size === checklist.sections.length;
 
     return (
         <div className="p-4 md:p-8">
@@ -1034,12 +1143,6 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
                  </div>
             )}
             
-            {!isEditMode && (
-                <div className="flex space-x-4 mb-6">
-                    <button onClick={() => handleCheckAll(false)} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">Tout décocher</button>
-                </div>
-            )}
-
             <div className="bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
                 <div className="font-bold text-gray-400 uppercase tracking-wider mb-2">Avions concernés:</div>
                 {isEditMode ? (
@@ -1106,12 +1209,47 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
                 )}
             </div>
 
+            <div className="bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
+                <label htmlFor={`notes-${checklist.id}`} className="font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                    Notes Personnelles
+                </label>
+                <textarea
+                    id={`notes-${checklist.id}`}
+                    value={localNotes}
+                    onChange={(e) => setLocalNotes(e.target.value)}
+                    className="w-full h-32 p-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+                    placeholder="Prenez vos notes ici..."
+                    aria-label="Notes personnelles pour cette checklist"
+                />
+            </div>
+
+            {!isEditMode && (
+                <div className="my-6 relative">
+                    <input
+                        type="text"
+                        value={filterText}
+                        onChange={e => setFilterText(e.target.value)}
+                        className="w-full p-3 pr-10 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Filtrer les items par nom ou action..."
+                        aria-label="Filtrer les items de la checklist"
+                    />
+                    {filterText && (
+                        <button
+                            onClick={() => setFilterText('')}
+                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white transition-colors"
+                            aria-label="Effacer le filtre"
+                        >
+                            <FaXmark size={20} />
+                        </button>
+                    )}
+                </div>
+            )}
             
             {!isEditMode && (
                  <div className="bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
                     <div className="font-bold text-gray-400 uppercase tracking-wider mb-2">Sommaire de la checklist:</div>
                     <div className="flex flex-wrap gap-2">
-                        {checklist.sections.map(section => {
+                        {filteredSections.map(section => {
                             const isEmergencySection = /urgences/i.test(section.title);
                             const isDistressSection = /detresse & transpondeur/i.test(section.title);
                             
@@ -1137,174 +1275,189 @@ const ChecklistComponent: React.FC<ChecklistComponentProps> = ({ checklist, onCh
             )}
             
             {!isEditMode && (
-                <div className="flex justify-between items-center mb-6 gap-4">
+                <div className="flex w-full items-center mb-6 gap-2 sm:gap-4">
                     <button
-                        onClick={handleCollapseAll}
-                        className="flex-1 text-center px-3 sm:px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition text-sm sm:text-base"
+                        onClick={allSectionsCollapsed ? handleExpandAll : handleCollapseAll}
+                        className="flex-1 px-3 sm:px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition text-sm sm:text-base"
                     >
-                        Replier toutes les sections
+                        {allSectionsCollapsed ? 'Déplier toutes les sections' : 'Replier toutes les sections'}
                     </button>
-                    <button 
-                        onClick={handleExpandAll}
-                        className="flex-1 text-center px-3 sm:px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition text-sm sm:text-base"
+                     <button 
+                        onClick={handleResetChecks} 
+                        className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm sm:text-base"
                     >
-                        Déplier toutes les sections
+                        Réinitialiser (tout décocher)
                     </button>
                 </div>
             )}
 
             <div>
                  <ActionZone isEditMode={isEditMode} copiedSection={copiedSection} onAdd={() => handleAddSection(0)} onPaste={() => onPasteSection(checklist.id, 0)} onDrop={() => handleSectionDrop(0)} />
-                {checklist.sections.map((section, index) => {
-                    const isEmergencySection = /urgences/i.test(section.title);
-                    const isDistressSection = /detresse & transpondeur/i.test(section.title);
+                {filteredSections.length > 0 ? (
+                    filteredSections.map((section, index) => {
+                        const isEmergencySection = /urgences/i.test(section.title);
+                        const isDistressSection = /detresse & transpondeur/i.test(section.title);
 
-                    let headerClass = 'bg-black bg-opacity-20';
-                    if (isEmergencySection) {
-                        headerClass = 'bg-red-800';
-                    } else if (isDistressSection) {
-                        headerClass = 'bg-orange-800';
-                    }
+                        let headerClass = 'bg-black bg-opacity-20';
+                        if (isEmergencySection) {
+                            headerClass = 'bg-red-800';
+                        } else if (isDistressSection) {
+                            headerClass = 'bg-orange-800';
+                        }
 
-                    return (
-                    <React.Fragment key={section.id}>
-                        <div 
-                            className="bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6"
-                            draggable={isEditMode}
-                            onDragStart={() => handleSectionDragStart(section.id)}
-                            ref={el => { sectionRefs.current[section.id] = el; }}
-                        >
-                            <div className={`text-white text-xl font-bold p-3 flex items-center justify-between ${headerClass}`}>
-                                {isEditMode ? (
-                                    <>
-                                        <span className="cursor-grab text-gray-500 mr-4"><FaGripVertical /></span>
-                                        <input 
-                                            type="text"
-                                            value={section.title}
-                                            onChange={(e) => handleSectionTitleChange(section.id, e.target.value)}
-                                            className="w-full p-1 bg-gray-700 border border-gray-600 rounded text-white uppercase tracking-wider"
-                                        />
-                                        <div className="flex items-center ml-4 space-x-4">
-                                            <button onClick={() => onCopySection(section)} className="text-blue-400 hover:text-blue-300" title="Copier la section">
-                                                <FaCopy />
-                                            </button>
-                                            <button onClick={() => handleDeleteSection(section.id)} className="text-red-500 hover:text-red-400" title="Supprimer la section">
-                                                <FaTrash />
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="flex items-center flex-grow">
-                                            <button onClick={() => handleToggleSection(section.id)} className="mr-3 p-1 text-gray-400 hover:text-white" aria-label={collapsedSections.has(section.id) ? "Déplier la section" : "Replier la section"}>
-                                                {collapsedSections.has(section.id) ? <FaChevronDown size={16} /> : <FaChevronUp size={16} />}
-                                            </button>
-                                            <h3 className="uppercase tracking-wider">{section.title}</h3>
-                                        </div>
-                                        <div className="flex items-center space-x-4">
-                                            <button onClick={() => handleCheckAllInSection(section.id)} className="text-gray-400 hover:text-white" title="Tout cocher dans cette section">
-                                                <FaCheckDouble size={20} />
-                                            </button>
-                                            <button onClick={() => handleUncheckAllInSection(section.id)} className="text-gray-400 hover:text-white" title="Tout décocher dans cette section">
-                                                <FaSquareXmark size={20} />
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                            {!collapsedSections.has(section.id) && (
-                            <ul>
-                                {section.items.map(item => {
-                                    const isHighlighted = highlightedItemId === item.id;
-                                    const isWarning = warningItemIds.has(item.id);
+                        return (
+                        <React.Fragment key={section.id}>
+                            <div 
+                                className="bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6"
+                                draggable={isEditMode}
+                                onDragStart={() => handleSectionDragStart(section.id)}
+                                ref={el => { sectionRefs.current[section.id] = el; }}
+                            >
+                                <div className={`text-white text-xl font-bold p-3 flex items-center justify-between ${headerClass}`}>
+                                    {isEditMode ? (
+                                        <>
+                                            <span className="cursor-grab text-gray-500 mr-4"><FaGripVertical /></span>
+                                            <input 
+                                                type="text"
+                                                value={section.title}
+                                                onChange={(e) => handleSectionTitleChange(section.id, e.target.value)}
+                                                className="w-full p-1 bg-gray-700 border border-gray-600 rounded text-white uppercase tracking-wider"
+                                            />
+                                            <div className="flex items-center ml-4 space-x-2 sm:space-x-4">
+                                                <label className="flex items-center cursor-pointer group" title="Cocher cette section par défaut en mode 'En Vol'">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!section.defaultChecked}
+                                                        onChange={() => handleToggleSectionDefaultCheck(section.id)}
+                                                        className="w-5 h-5 rounded bg-gray-600 border-gray-500 text-green-500 focus:ring-green-400"
+                                                    />
+                                                    <FaCheckDouble className="ml-2 text-green-400 opacity-70 group-hover:opacity-100" />
+                                                </label>
+                                                <button onClick={() => onCopySection(section)} className="text-blue-400 hover:text-blue-300" title="Copier la section">
+                                                    <FaCopy />
+                                                </button>
+                                                <button onClick={() => handleDeleteSection(section.id)} className="text-red-500 hover:text-red-400" title="Supprimer la section">
+                                                    <FaTrash />
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center flex-grow">
+                                                <button onClick={() => handleToggleSection(section.id)} className="mr-3 p-1 text-gray-400 hover:text-white" aria-label={collapsedSections.has(section.id) ? "Déplier la section" : "Replier la section"}>
+                                                    {collapsedSections.has(section.id) ? <FaChevronDown size={16} /> : <FaChevronUp size={16} />}
+                                                </button>
+                                                <h3 className="uppercase tracking-wider">{section.title}</h3>
+                                            </div>
+                                            <div className="flex items-center space-x-4">
+                                                <button onClick={() => handleCheckAllInSection(section.id)} className="text-gray-400 hover:text-white" title="Tout cocher dans cette section">
+                                                    <FaCheckDouble size={20} />
+                                                </button>
+                                                <button onClick={() => handleUncheckAllInSection(section.id)} className="text-gray-400 hover:text-white" title="Tout décocher dans cette section">
+                                                    <FaSquareXmark size={20} />
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                                {!collapsedSections.has(section.id) && (
+                                <ul>
+                                    {section.items.map(item => {
+                                        const isHighlighted = highlightedItemId === item.id;
+                                        const isWarning = warningItemIds.has(item.id);
 
-                                    const labelColorClass = item.checked ? 'text-gray-500 line-through' : item.isCritical ? 'text-red-400' : isHighlighted ? 'text-sky-300' : 'text-gray-200';
-                                    const actionColorClass = item.checked ? 'text-gray-500 line-through' : item.isCritical ? 'text-red-400' : isHighlighted ? 'text-sky-300' : 'text-gray-400';
-                                    const fontWeightClass = isHighlighted ? 'font-semibold' : '';
-                                    
-                                    const liClasses = [
-                                        'flex flex-col lg:flex-row lg:items-start p-3 border-b border-gray-700 last:border-b-0 group transition-all duration-300',
-                                        isEditMode ? 'cursor-move' : '',
-                                        isHighlighted ? 'bg-sky-800' : '',
-                                        isWarning ? 'bg-red-900 bg-opacity-60' : '',
-                                    ];
+                                        const labelColorClass = item.checked ? 'text-gray-500 line-through' : item.isCritical ? 'text-red-400' : isHighlighted ? 'text-sky-300' : 'text-gray-200';
+                                        const actionColorClass = item.checked ? 'text-gray-500 line-through' : item.isCritical ? 'text-red-400' : isHighlighted ? 'text-sky-300' : 'text-gray-400';
+                                        const fontWeightClass = isHighlighted ? 'font-semibold' : '';
+                                        
+                                        const liClasses = [
+                                            'flex flex-col lg:flex-row lg:items-start p-3 border-b border-gray-700 last:border-b-0 group transition-all duration-300',
+                                            isEditMode ? 'cursor-move' : '',
+                                            isHighlighted ? 'bg-sky-800' : '',
+                                            isWarning ? 'bg-red-900 bg-opacity-60' : '',
+                                        ];
 
-                                    if (!isHighlighted && !isWarning) {
-                                        if (isEmergencySection) {
-                                            liClasses.push('bg-red-900 bg-opacity-30');
-                                        } else if (isDistressSection) {
-                                            liClasses.push('bg-orange-900 bg-opacity-30');
+                                        if (!isHighlighted && !isWarning) {
+                                            if (isEmergencySection) {
+                                                liClasses.push('bg-red-900 bg-opacity-30');
+                                            } else if (isDistressSection) {
+                                                liClasses.push('bg-orange-900 bg-opacity-30');
+                                            }
                                         }
-                                    }
 
-                                    return (
-                                    <li
-                                        key={item.id}
-                                        ref={el => { itemRefs.current[item.id] = el; }}
-                                        draggable={isEditMode}
-                                        onDragStart={() => handleDragStart(section.id, item.id)}
-                                        onDragOver={(e) => e.preventDefault()}
-                                        onDrop={() => handleDrop(section.id, item.id)}
-                                        className={liClasses.join(' ')}
-                                    >
-                                        {/* Left Column: Label */}
-                                        <div className="flex-1 min-w-0 flex items-center w-full lg:pr-4">
-                                            {isEditMode && <span className="text-gray-500 mr-2 lg:mr-4 cursor-grab"><FaGripVertical /></span>}
-                                            {isEditMode ? (
-                                                <input type="text" value={item.label} onChange={(e) => handleItemContentChange(section.id, item.id, 'label', e.target.value)} className={`w-full p-1 bg-gray-700 border border-gray-600 rounded text-white text-sm sm:text-base ${item.isCritical ? 'text-red-400' : ''}`} />
-                                            ) : (
-                                                <span className={`text-sm sm:text-base ${labelColorClass} ${fontWeightClass} transition-colors`}>
-                                                    {item.label}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Right Column: Action & Controls */}
-                                        <div className="w-full lg:w-5/12 flex items-center justify-end mt-2 lg:mt-0">
-                                            <div className="flex-1 min-w-0">
-                                            {isEditMode ? (
-                                                <input type="text" value={item.action} onChange={(e) => handleItemContentChange(section.id, item.id, 'action', e.target.value)} className={`w-full p-1 bg-gray-700 border border-gray-600 rounded text-white text-sm sm:text-base text-right ${item.isCritical ? 'text-red-400' : ''}`} />
-                                            ) : (
-                                                <span className={`text-sm sm:text-base font-mono text-right ${actionColorClass} ${fontWeightClass} transition-colors break-words w-full block`}>
-                                                    {item.action}
-                                                </span>
-                                            )}
+                                        return (
+                                        <li
+                                            key={item.id}
+                                            ref={el => { itemRefs.current[item.id] = el; }}
+                                            draggable={isEditMode}
+                                            onDragStart={() => handleDragStart(section.id, item.id)}
+                                            onDragOver={(e) => e.preventDefault()}
+                                            onDrop={() => handleDrop(section.id, item.id)}
+                                            className={liClasses.join(' ')}
+                                        >
+                                            {/* Left Column: Label */}
+                                            <div className="flex-1 min-w-0 flex items-center w-full lg:pr-4">
+                                                {isEditMode && <span className="text-gray-500 mr-2 lg:mr-4 cursor-grab"><FaGripVertical /></span>}
+                                                {isEditMode ? (
+                                                    <input type="text" value={item.label} onChange={(e) => handleItemContentChange(section.id, item.id, 'label', e.target.value)} className={`w-full p-1 bg-gray-700 border border-gray-600 rounded text-white text-sm sm:text-base ${item.isCritical ? 'text-red-400' : ''}`} />
+                                                ) : (
+                                                    <span className={`text-sm sm:text-base ${labelColorClass} ${fontWeightClass} transition-colors`}>
+                                                        {item.label}
+                                                    </span>
+                                                )}
                                             </div>
 
-                                            {isEditMode ? (
-                                                <>
-                                                    <button onClick={() => handleToggleCriticalItem(section.id, item.id)} className={`ml-3 p-1 rounded-full transition-colors text-xl flex-shrink-0 ${item.isCritical ? 'bg-red-500 text-white' : 'text-gray-500 hover:bg-gray-600'} opacity-0 group-hover:opacity-100`} title="Marquer comme important">
-                                                        🚨
-                                                    </button>
-                                                    <button onClick={() => handleDeleteItem(section.id, item.id)} className="ml-2 text-red-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                        <FaTrash />
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={item.checked}
-                                                    onChange={() => handleCheck(section.id, item.id)}
-                                                    className="ml-4 w-6 h-6 rounded-md bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-400 cursor-pointer flex-shrink-0"
-                                                />
-                                            )}
-                                        </div>
-                                    </li>
-                                    );
-                                })}
-                                {isEditMode && (
-                                    <li className="p-3">
-                                        <button onClick={() => handleAddItem(section.id)} className="w-full text-center py-2 bg-green-900 bg-opacity-50 text-green-300 rounded hover:bg-green-800 hover:bg-opacity-50 transition">
-                                            + Ajouter une ligne
-                                        </button>
-                                    </li>
+                                            {/* Right Column: Action & Controls */}
+                                            <div className="w-full lg:w-5/12 flex items-center justify-end mt-2 lg:mt-0">
+                                                <div className="flex-1 min-w-0">
+                                                {isEditMode ? (
+                                                    <input type="text" value={item.action} onChange={(e) => handleItemContentChange(section.id, item.id, 'action', e.target.value)} className={`w-full p-1 bg-gray-700 border border-gray-600 rounded text-white text-sm sm:text-base text-right ${item.isCritical ? 'text-red-400' : ''}`} />
+                                                ) : (
+                                                    <span className={`text-sm sm:text-base font-mono text-right ${actionColorClass} ${fontWeightClass} transition-colors break-words w-full block`}>
+                                                        {item.action}
+                                                    </span>
+                                                )}
+                                                </div>
+
+                                                {isEditMode ? (
+                                                    <>
+                                                        <button onClick={() => handleToggleCriticalItem(section.id, item.id)} className={`ml-3 p-1 rounded-full transition-colors text-xl flex-shrink-0 ${item.isCritical ? 'bg-red-500 text-white' : 'text-gray-500 hover:bg-gray-600'} opacity-0 group-hover:opacity-100`} title="Marquer comme important">
+                                                            🚨
+                                                        </button>
+                                                        <button onClick={() => handleDeleteItem(section.id, item.id)} className="ml-2 text-red-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                            <FaTrash />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={item.checked}
+                                                        onChange={() => handleCheck(section.id, item.id)}
+                                                        className="ml-4 w-6 h-6 rounded-md bg-gray-700 border-gray-600 text-blue-500 focus:ring-blue-400 cursor-pointer flex-shrink-0"
+                                                    />
+                                                )}
+                                            </div>
+                                        </li>
+                                        );
+                                    })}
+                                    {isEditMode && (
+                                        <li className="p-3">
+                                            <button onClick={() => handleAddItem(section.id)} className="w-full text-center py-2 bg-green-900 bg-opacity-50 text-green-300 rounded hover:bg-green-800 hover:bg-opacity-50 transition">
+                                                + Ajouter une ligne
+                                            </button>
+                                        </li>
+                                    )}
+                                </ul>
                                 )}
-                            </ul>
-                            )}
-                        </div>
-                        <ActionZone isEditMode={isEditMode} copiedSection={copiedSection} onAdd={() => handleAddSection(index + 1)} onPaste={() => onPasteSection(checklist.id, index + 1)} onDrop={() => handleSectionDrop(index + 1)} />
-                    </React.Fragment>
-                )})}
+                            </div>
+                            <ActionZone isEditMode={isEditMode} copiedSection={copiedSection} onAdd={() => handleAddSection(index + 1)} onPaste={() => onPasteSection(checklist.id, index + 1)} onDrop={() => handleSectionDrop(index + 1)} />
+                        </React.Fragment>
+                    )})
+                ) : (
+                    <div className="text-center py-8 text-gray-400 italic">
+                        Aucun item ne correspond à votre recherche.
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -1582,8 +1735,15 @@ const App: React.FC = () => {
   }, []);
   
   const handleChecklistChange = (updatedChecklist: Checklist) => {
+    // This function can be called rapidly (e.g., by notes textarea), 
+    // so we don't save to history here. History is for discrete edit-mode actions.
+    setChecklists(prev => prev.map(c => c.id === updatedChecklist.id ? updatedChecklist : c));
+  }
+  
+  const handleChecklistChangeWithHistory = (updatedChecklist: Checklist) => {
     updateChecklistsAndSaveHistory(prev => prev.map(c => c.id === updatedChecklist.id ? updatedChecklist : c));
   }
+
 
   const handleTabChange = (tabId: string) => {
     if (activeTab !== tabId) {
@@ -1607,7 +1767,8 @@ const App: React.FC = () => {
       id: idCounter.next(),
       title: trimmedTitle,
       aircrafts: [],
-      sections: [{id: idCounter.next(), title: 'Nouvelle Section', items: []}]
+      sections: [{id: idCounter.next(), title: 'Nouvelle Section', items: []}],
+      notes: ''
     };
     updateChecklistsAndSaveHistory(prev => [...prev, newChecklist]);
     handleTabChange(newChecklist.id);
@@ -1649,6 +1810,7 @@ const App: React.FC = () => {
         title: newTitle,
         aircrafts: checklistToDuplicate.aircrafts.map(ac => ({...ac, id: idCounter.next()})),
         sections: deepCopyWithNewIds(checklistToDuplicate.sections),
+        notes: checklistToDuplicate.notes || '',
     };
 
     updateChecklistsAndSaveHistory(prev => [...prev, newChecklist]);
@@ -1834,7 +1996,7 @@ const App: React.FC = () => {
     if (currentChecklist) {
       return <ChecklistComponent 
                 checklist={currentChecklist} 
-                onChecklistChange={handleChecklistChange} 
+                onChecklistChange={isEditMode ? handleChecklistChangeWithHistory : handleChecklistChange} 
                 isEditMode={isEditMode} 
                 copiedSection={copiedSection}
                 onCopySection={handleCopySection}

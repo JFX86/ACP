@@ -14,9 +14,10 @@ export interface ChecklistItem {
 }
 
 export interface ChecklistSection {
-  id: string;
+  id:string;
   title: string;
   items: ChecklistItem[];
+  defaultChecked?: boolean;
 }
 
 export interface Checklist {
@@ -24,4 +25,5 @@ export interface Checklist {
   title: string;
   aircrafts: Aircraft[];
   sections: ChecklistSection[];
+  notes?: string;
 }
