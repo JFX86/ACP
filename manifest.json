@@ -1,5 +1,5 @@
 {
-  "short_name": "ACP Checklists",
+  "short_name": "ACP",
   "name": "Aéroclub du Poitou - Checklists",
   "icons": [
     {
@@ -20,7 +20,7 @@
   ],
 
 
-  "start_url": "/",
+  "start_url": "https://acpoitou86.netlify.app/",
   "scope": "/",
   "display": "standalone",
   "theme_color": "#111827",
