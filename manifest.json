@@ -6,14 +6,25 @@
       "src": "/icon-192x192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
+  
+    {
+      "src": "/regular.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    }
+
+
+
+
   ],
   "start_url": "/",
   "scope": "/",
