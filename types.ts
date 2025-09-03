@@ -1,4 +1,5 @@
 
+
 export interface Aircraft {
   id: string;
   name: string;
@@ -25,5 +26,4 @@ export interface Checklist {
   title: string;
   aircrafts: Aircraft[];
   sections: ChecklistSection[];
-  notes?: string;
 }

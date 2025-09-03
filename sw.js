@@ -1,14 +1,11 @@
-const VERSION = 'v1.0.3';
+const VERSION = 'v1.0.4';
 const CACHE_NAME = `acp-checklists-cache-${VERSION}`;
 
 // List of files that constitute the "app shell".
+// Source files (.ts, .tsx) are removed to correctly cache build artifacts.
 const APP_SHELL_URLS = [
     '/',
     '/index.html',
-    '/index.tsx',
-    '/App.tsx',
-    '/constants.ts',
-    '/types.ts',
     '/manifest.json',
     '/icon-192x192.png',
     '/icon-512x512.png'
