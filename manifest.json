@@ -15,14 +15,13 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "https://acpoitou.netlify.app/",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "theme_color": "#111827",
   "background_color": "#1f2937",
   "description": "Application de checklists pour les pilotes de l'Aéroclub du Poitou."
 }
-
 
 
 {
