@@ -15,7 +15,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "https://acpoitou.netlify.app/",
   "scope": "/",
   "display": "standalone",
   "theme_color": "#111827",
